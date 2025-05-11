@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Visa-Free Stay Calculator</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+    label { display: block; margin-top: 10px; }
+    input, textarea { width: 100%; padding: 8px; }
+    button { margin-top: 15px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+<h2>Visa-Free Stay Calculator (Schengen Area)</h2>
+
+<p>Calculate how many days you can stay without a visa under the 90/180 rule.</p>
+
+<label for="entryDate">Planned Entry Date:</label>
+<input type="date" id="entryDate">
+
+<label for="pastTrips">Enter your past trip dates (format: YYYY-MM-DD to YYYY-MM-DD, one per line):</label>
+<textarea id="pastTrips" rows="6" placeholder="e.g.&#10;2025-01-01 to 2025-01-20&#10;2025-03-10 to 2025-03-25"></textarea>
+
+<button onclick="calculateDays()">Calculate Remaining Days</button>
+
+<h3 id="result"></h3>
+
+<script>
+function calculateDays() {
+  const entryDate = new Date(document.getElementById("entryDate").value);
+  const pastTripsInput = document.getElementById("pastTrips").value.trim().split("\n");
+  let totalDaysUsed = 0;
+
+  const windowStart = new Date(entryDate);
+  windowStart.setDate(windowStart.getDate() - 179); // 180-day window
+
+  for (let line of pastTripsInput) {
+    const [startStr, endStr] = line.split(" to ");
+    if (!startStr || !endStr) continue;
+
+    const tripStart = new Date(startStr.trim());
+    const tripEnd = new Date(endStr.trim());
+
+    // Skip if trip is entirely outside the 180-day window
+    if (tripEnd < windowStart || tripStart > entryDate) continue;
+
+    const effectiveStart = tripStart < windowStart ? windowStart : tripStart;
+    const effectiveEnd = tripEnd > entryDate ? entryDate : tripEnd;
+
+    const days = Math.floor((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24)) + 1;
+    totalDaysUsed += days;
+  }
+
+  const remaining = 90 - totalDaysUsed;
+  const resultText = remaining > 0
+    ? `You can stay up to ${remaining} more day(s) without a visa.`
+    : `You have used your 90-day allowance. Wait before entering again.`;
+
+  document.getElementById("result").textContent = resultText;
+}
+</script>
+
+</body>
+</html>
